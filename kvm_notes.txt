@@ -1,0 +1,29 @@
+qemu-img create -f qcow2 vms/disk01.img 2G
+kvm -hda vms/disk01.img -enable-kvm -cdrom vms/archlinux-2017.10.01-x86_64.iso -m 512 -boot d
+fdisk /dev/sda
+mkfs.ext4 /dev/sda1
+mount /dev/sda1 /mnt
+pacstrap /mnt base base-devel
+genfstab -U /mnt >> /mnt/etc/fstab
+arch-chroot /mnt
+passwd # to change password
+locale-gen # to generate locale
+pacman -Syy grub # install grub
+grub-install /dev/sda
+grub-mkconfig -o /boot/grub/grub.cfg
+exit
+umount /mnt -R
+poweroff
+kvm -boot c vms/disk01.img -m 512 -enable-kvm
+systemctl enable dhcpcd
+echo qemu >> /etc/hostname
+reboot
+pacman -Syy
+useradd -m -G wheel <user>
+passwd <user>
+# remove the wheel comment from /etc/sudoers
+pacman -Syy sudo
+reboot
+# login as user and check sudo
+pacman -S xfce4
+startxfce4
