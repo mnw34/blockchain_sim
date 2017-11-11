@@ -33,7 +33,7 @@ class bstree[T](_t : T, lessThan : (T, T) => Boolean) {
     var tmp = l
     if (null != left) tmp = left.inorder(tmp)
 
-    tmp :+ t
+    tmp = tmp :+ t
 
     if (null != right) tmp = right.inorder(tmp)
 
@@ -41,8 +41,7 @@ class bstree[T](_t : T, lessThan : (T, T) => Boolean) {
   }
 
   def preorder(l : Array[T])(implicit m : ClassTag[T]) : Array[T] = {
-    l :+ t
-    var tmp = l
+    var tmp = l :+ t
     if (null != left)
       tmp = left.preorder(tmp)
     if (null != right)
