@@ -1,60 +1,142 @@
 // rbtree.scala
 // red black tree
-object Color {
-  val RED    = 0
-  val BLACK  = 1
-  val DBLACK = 2
-}
 
-class rbtree[T](t : T, lessThan : (T, T) => Boolean)
-  extends bstree(t, lessThan) {
+// define red black tree colors
+class Color
+object BLACK extends Color { override def toString = "b" }
+object RED extends Color { override def toString = "r" }
+object DBLACK extends Color { override def toString = "db" }
 
-  var color  : Int = Color.BLACK
 
-  def insert(node : rbtree[T]) : Unit = {
+class rbtree[T](t : T, lessThan : (T, T) => Boolean, equals : (T, T) => Boolean)
+  extends bstree(t, lessThan, equals) {
+
+  var color  : Color = BLACK
+
+  private def asRb(n : bstree[T]) = n.asInstanceOf[rbtree[T]]
+
+  private def setColor(n : bstree[T], c : Color) = asRb(n).color = c
+  private def getColor(n : bstree[T]) = asRb(n).color
+
+  implicit class bstreeColor(n : bstree[T]) {
+    def recolor = asRb(n).recolor
+    def rotRight = asRb(n).rotRight
+    def rotLeft = asRb(n).rotLeft
+    def balance = asRb(n).balance
+  }
+
+  override def root: rbtree[T] = asRb(super.root)
+
+  def insert(node : rbtree[T]) = {
     // first step is color inserted node red
-    node.color = Color.RED
+    node.color = RED
 
     // call the binary search tree insert
     super.insert(node)
 
     // balance red black tree
-    node.balance()
+    node.balance
   }
 
-  private def asRb(t : bstree[T]) = t.asInstanceOf[rbtree[T]]
+  override def find(t : T) : rbtree[T] = asRb(super.find(t))
 
-  private def setColor(x : bstree[T], c : Int) = asRb(x).color = c
+  override def delete : rbtree[T] = {
+
+    var r = asRb(super.delete)
+
+    // double black replacement node
+    if (BLACK == color && (null == r || BLACK == r.color)) {
+      r.color = DBLACK
+      r.recolor
+    }
+    else {
+      r.color = BLACK
+    }
+    r // return
+  }
+
+  private def recolor : Unit = {
+    if (null == parent) color = BLACK
+    else {
+      // sibling
+      var s : rbtree[T] = if (this == parent.left) asRb(parent.right) else asRb(parent.left)
+      if (BLACK == s.color) { // black sibling
+        // black sibling children
+        if ((null == s.left || BLACK == getColor(s.left)) && (null == s.right || BLACK == getColor(s.right))) {
+          s.color = RED
+          if (BLACK == getColor(parent)) {
+            setColor(parent, DBLACK)
+            parent.recolor
+          }
+          else setColor(parent, BLACK)
+        }
+        else { // at least one red sibling child
+          if (s == parent.left) { // left sibling
+            if (BLACK == getColor(s.left)) { // left right
+              s.right.rotLeft
+              s.color = RED
+              setColor(s.parent, BLACK)
+              s.parent.rotRight
+              s.color = BLACK
+            }
+            else { // left left
+              s.rotRight
+              setColor(s.left, BLACK)
+            }
+          }
+          else { // right sibling
+            if (BLACK == getColor(s.right)) { // right left
+              s.left.rotRight
+              s.color = RED
+              setColor(s.parent, BLACK)
+              s.parent.rotLeft
+              s.color = BLACK
+            }
+            else { // right right
+              s.rotLeft
+              setColor(s.right, BLACK)
+            }
+          }
+          if (s == parent.right && BLACK == getColor(s.right)) { // right left case
+            setColor(s.left, BLACK)
+            s.left.rotRight
+            s.parent.rotLeft
+          }
+          else { // left left, left right, right right cases
+            s.rotLeft
+            setColor(s.right, BLACK)
+          }
+        }
+      }
+      else { // red sibling
+
+      }
+    }
+  }
 
   // look up red black insert
   private def balance() : Unit = {
 
     if (null == parent) // root
-      color = Color.BLACK
+      color = BLACK
 
-    else if (Color.RED == asRb(parent).color) {
+    else if (RED == getColor(parent)) {
       var uncle = getUncle()
-      if (Color.RED == asRb(uncle).color) {
-        setColor(parent, Color.BLACK)
-        setColor(uncle,  Color.BLACK)
-        setColor(parent.parent, Color.RED)
-        asRb(parent.parent).balance()
-      }
-      else {
+      if (null == uncle || BLACK == uncle.color) { // black uncle
         if (parent.parent.left == parent) {
           if (parent.left == this) {
             // left left
             // right rotate grandparent
-            asRb(parent.parent).rotRight()
+            parent.parent.rotRight
             // swap parent and grandparent color
             colorSwap(parent, parent.right)
           }
           else {
             // left right
             // left rotate parent
-            asRb(parent).rotLeft()
+            parent.rotLeft
             // apply left left on parent
-            asRb(parent).rotRight()
+            parent.rotRight
             colorSwap(this, right)
           }
         }
@@ -62,38 +144,42 @@ class rbtree[T](t : T, lessThan : (T, T) => Boolean)
           if (parent.left == this) {
             // right left
             // right rotate parent
-            asRb(parent).rotRight()
+            parent.rotRight
             // apply right right on parent
-            asRb(parent).rotLeft()
+            parent.rotLeft
             colorSwap(this, left)
           }
           else {
             // right right
             // left rotate grandparent
-            asRb(parent.parent).rotLeft()
+            parent.parent.rotLeft
             // swap parent and grandparent color
             colorSwap(parent, parent.left)
           }
         }
       }
+      else { // red uncle
+        setColor(parent, BLACK)
+        uncle.color = BLACK
+        setColor(parent.parent, RED)
+        parent.parent.balance
+      }
     }
   }
 
-  private def getUncle() : bstree[T] = {
-    if (parent.parent.left == parent) {
-      return parent.parent.right
-    }
-    else {
-      return parent.parent.left
-    }
+  private def getUncle() : rbtree[T] = {
+    if (null == parent || null == parent.parent)
+      null
+    else if (parent.parent.left == parent)
+      asRb(parent.parent.right)
+    else
+      asRb(parent.parent.left)
   }
 
   private def colorSwap(x : bstree[T], y : bstree[T]) : Unit = {
-    var _x = asRb(x)
-    var _y = asRb(y)
-    var t = _x.color
-    _x.color = _y.color
-    _y.color = t
+    var t = asRb(x).color
+    setColor(x, getColor(y))
+    setColor(y, t)
   }
 
   private def rotRight() : Unit = {
@@ -102,30 +188,34 @@ class rbtree[T](t : T, lessThan : (T, T) => Boolean)
     //    p   u  -> x   g
     //   x v           v u
     left.parent = parent
-    if (parent.left == this) 
-      parent.left = left 
-    else 
-      parent.right = left
-    parent = left 
+    if (null != parent) {
+      if (parent.left == this)
+        parent.left = left
+      else
+        parent.right = left
+    }
+    parent = left
     left = parent.right
-    left.parent = this
     parent.right = this
+    if (null != left) left.parent = this
   }
 
   private def rotLeft() = {
-    // left rotate g
+    // left rotate p
     //      g         p
     //    p   u  <- x   g
     //   x v           v u
-    left.parent = parent
-    parent.right = left
-    left = parent
-    parent = parent.parent
-    left.parent = this
-    if (parent.left == left)
-      parent.left = this
-    else
-      parent.right = this
+    right.parent = parent
+    if (null != parent) {
+      if (parent.left == this)
+        parent.left = right
+      else
+        parent.right = right
+    }
+    parent = right
+    right = parent.left
+    parent.left = this
+    if (null != right) right.parent = this
   }
 } 
 

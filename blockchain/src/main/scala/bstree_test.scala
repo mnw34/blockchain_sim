@@ -5,19 +5,25 @@ object bstree_test {
     val randRange  = args(1).toInt
     var rand = scala.util.Random
 
-    // compare function
+    // compare functions
     val lessThan = (x : Int, y : Int) => x < y
+    val equals = (x : Int, y : Int) => x == y
+
+    // print function
+    val printInt = (x : bstree[Int]) => {
+      print(x.value + " ")
+    }
 
     // create root node
     var r = rand.nextInt(randRange)
     print("adding nodes: " + r)
-    var root = new bstree(r, lessThan)
+    var root = new bstree(r, lessThan, equals)
 
     // insert a bunch of random nodes
     for (i <- 0 to numRand) {
       r = rand.nextInt(randRange)
       print(" " + r)
-      var t = new bstree[Int](r, lessThan)
+      var t = new bstree[Int](r, lessThan, equals)
       root.insert(t)
     }
 
@@ -25,21 +31,26 @@ object bstree_test {
     for (i <- 0 to numRand) {
       r = rand.nextInt(randRange)
       var x = root.find(r)
-      var t = if (null == x) -1 else x.t
+      var t = if (null == x) -1 else x.value
       print("root.find(" + r + ") : ")
       while (x != null) {
-        print(" " + x.t)
+        print(" " + x.value)
         x = x.parent
       }
       println()
     }
 
-    var l = Array[Int]()
-    println("\ninorder " + root.inorder(l).mkString(" "))
-    l = Array[Int]()
-    println("preorder " + root.preorder(l).mkString(" "))
-    l = Array[Int]()
-    println("postorder " + root.postorder(l).mkString(" "))
+    var printAll = (r : bstree[Int]) => {
+      println("\nheight " + r.height)
+      r.inorder(printInt)
+      println
+      r.preorder(printInt)
+      println
+      r.postorder(printInt)
+      println
+    }
+
+    printAll(root)
 
     println("\nDoing some random deletions and rerunning traversals")
     for (i <- 0 to numRand << 1) {
@@ -47,17 +58,17 @@ object bstree_test {
       var x = root.find(r)
       if (null != x) {
         println("Deleting " + r);
-        if (root == x) root = x.delete()
-        else x.delete()
-        l = Array[Int]()
-        println("\ninorder " + root.inorder(l).mkString(" "))
-        l = Array[Int]()
-        println("preorder " + root.preorder(l).mkString(" "))
-        l = Array[Int]()
-        println("postorder " + root.postorder(l).mkString(" "))
+        if (root == x)
+          root = x.delete
+        else x.delete
+
+        if (root != null) {
+          printAll(root)
+        }
+        else {
+          println("empty tree")
+        }
       }
     }
-
-
   }
 }

@@ -1,18 +1,14 @@
 // bstree.scala
 // binary search tree
 
-import scala.reflect.ClassTag
-import scala.reflect.ClassManifest
-
 // takes a datatype and compare function
-class bstree[T](_t : T, lessThan : (T, T) => Boolean) {
+class bstree[T](var value : T, val lessThan : (T, T) => Boolean, val equals : (T, T) => Boolean) {
   var right  : bstree[T] = null
   var left   : bstree[T] = null
   var parent : bstree[T] = null
-  var t      : T = _t
   
   def insert(node : bstree[T]) : Unit = {
-    if (true == lessThan(node.t, t)) {
+    if (true == lessThan(node.value, value)) {
 
       if (null == left) {
         left = node
@@ -29,94 +25,110 @@ class bstree[T](_t : T, lessThan : (T, T) => Boolean) {
   }
 
   def insert(t : T) : Unit = {
-    var node = new bstree(t, lessThan)
+    var node = new bstree(t, lessThan, equals)
     this.insert(node)
   }
 
-  def find(t : T) : bstree[T] = {
+  def root : bstree[T] = if (null == parent) this else parent.root
+
+  def height : Int = {
+    if (null == left && null == right) 1      // height of this
+    else if (null == left) 1 + right.height
+    else if (null == right) 1 + left.height
+    else {
+      var lh = left.height
+      var rh = right.height
+      if (lh > rh) 1 + lh
+      else         1 + rh
+    }
+  }
+
+  def find(v : T) : bstree[T] = {
     var r : bstree[T] = this
-    if (r.t == t) 
+    if (v.equals(r.value))
       return r
-    else if (lessThan(t, r.t)) {
+    else if (lessThan(v, r.value)) {
       if (null != left)
-        return left.find(t)
+        return left.find(v)
       else 
         return null
     }
     else {
       if (null != right) 
-        return right.find(t)
+        return right.find(v)
       else 
         return null
     }
   }
 
-  def delete() : bstree[T] = {
+  // returns the node now at this index in the tree
+  def delete : bstree[T] = {
     if (left != null && right != null) { // two children
       var m = right.min()
       if (null != parent) {
         if (this == parent.left) parent.left = m
         else parent.right = m
       }
-      if (this != m.parent) m.parent.left = m.right
+      if (this != m.parent) {
+        m.parent.left = m.right
+        if (null != m.right) m.right.parent = m.parent
+      }
       m.parent = parent
       m.left = left
+      if (m != right) {
+        m.right = right
+        right.parent = m
+      }
       left.parent = m
       return m
     }
     else if (left != null) { // left only
-      left.parent = parent
       if (null != parent) {
         if (this == parent.right) parent.right = left
         else parent.left = left
       }
+      left.parent = parent
       return left
     }
     else if (right != null) { // right only
-      right.parent = parent
       if (null != parent) {
         if (this == parent.right) parent.right = right
         else parent.left = right
       }
+      right.parent = parent
       return right
     }
     else // no children
     {
-      if (this == parent.right) parent.right = null
+      if (null == parent) return null
+      else if (this == parent.right) parent.right = null
       else parent.left = null
       return null
     }
   }
  
-  def inorder(l : Array[T])(implicit m : ClassTag[T]) : Array[T] = {
-    var tmp = l
-    if (null != left) tmp = left.inorder(tmp)
-
-    tmp = tmp :+ t
-
-    if (null != right) tmp = right.inorder(tmp)
-
-    return tmp
+  def inorder(f : bstree[T] => Unit) : Unit = {
+    if (null != left)
+      left.inorder(f)
+    f(this)
+    if (null != right)
+      right.inorder(f)
   }
 
-  def preorder(l : Array[T])(implicit m : ClassTag[T]) : Array[T] = {
-    var tmp = l :+ t
+  def preorder(f : bstree[T] => Unit) : Unit = {
+    f(this)
     if (null != left)
-      tmp = left.preorder(tmp)
+      left.preorder(f)
     if (null != right)
-      tmp = right.preorder(tmp)
-
-    return tmp
+      right.preorder(f)
   }
 
-  def postorder(l : Array[T])(implicit m : ClassTag[T]) : Array[T] = {
-    var tmp = l
+  def postorder(f : bstree[T] => Unit) : Unit = {
     if (null != left)
-      tmp = left.postorder(tmp)
+      left.postorder(f)
     if (null != right)
-      tmp = right.postorder(tmp)
-
-    return tmp :+ t
+      right.postorder(f)
+    f(this)
   }
 
   private def min() : bstree[T] = {
