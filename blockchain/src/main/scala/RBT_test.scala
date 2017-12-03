@@ -174,6 +174,7 @@ object RBT_test {
       var r = rand.nextInt(randRange)
       println("adding node: " + r)
       var rbt = new RBTColor(r, lessThan, equals)
+      var z = 1
 
       // insert a bunch of random nodes
       var l = ListBuffer(r)
@@ -185,7 +186,13 @@ object RBT_test {
         l += r
         printAll(rbt)
         if (!isValidRBT(rbt))
-          throw new Exception("Invalid BST ")
+          throw new Exception("Invalid RBT ")
+        else if (null != rbt.parent)
+          throw new Exception("Invalid RBT reference not root")
+        else if (numNodes != z + 1)
+          throw new Exception("Invalid number of nodes after insert"+ numNodes)
+        else
+          z = numNodes
       }
 
       println("\nTrying to find random values...")
@@ -220,7 +227,13 @@ object RBT_test {
             rbt = t.asInstanceOf[RBTColor[Int]]
             printAll(rbt)
             if (!isValidRBT(rbt))
-              throw new Exception("Invalid BST ")
+              throw new Exception("Invalid RBT ")
+            else if (null != rbt.parent)
+              throw new Exception("Invalid RBT reference not root")
+            else if (z - 1 != numNodes)
+              throw new Exception("Invalid num nodes after delete " + numNodes)
+            else
+              z = numNodes
           }
           else {
             rbt = null

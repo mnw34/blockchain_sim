@@ -130,6 +130,7 @@ class RBT[T](t : T, lessThan : (T, T) => Boolean, equals : (T, T) => Boolean)
 
       if (null == parent) {
         setColor(n, BLACK)
+        if (null != n) n.parent = null
         return asRb(n)
       }
       else if (RED == color || RED == getColor(n)) {
