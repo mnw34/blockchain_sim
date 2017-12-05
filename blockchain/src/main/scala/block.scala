@@ -4,18 +4,18 @@
  */
 
 import java.security.MessageDigest
+import crypto.hashable
+import crypto.hasher
 
-class block (p : block, d : Array[Byte], hash : hash) {
-  val prev : block = p
+class block (val prev : block, val data : hashable, val hasher : hasher) {
   var next : block = null
-  var data : Array[Byte] = d
-  val digest : Array[Byte] = hash.get(hash.get(prev.data))
+  val digest : Array[Byte] = hasher.hash(prev.digest ++ data.getData)
 
   def setNext(n : block) = next = n
   
   override def toString() : String = {
-    return "prevHash " + prev + "\n"
-           "data     " + data + "\n"
+    return "prevHash " + prev + "\n" +
+           "data     " + data + "\n" +
            "hash     " + digest + "\n"
   }
 }

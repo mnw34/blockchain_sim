@@ -2,13 +2,15 @@
 // binary search tree
 
 // takes a datatype and compare function
-class BST[T](var value : T, val lessThan : (T, T) => Boolean, val equals : (T, T) => Boolean) {
-  var right  : BST[T] = null
-  var left   : BST[T] = null
-  var parent : BST[T] = null
+class bst[T](var value : T, val lessThan : (T, T) => Boolean, val equals : (T, T) => Boolean) {
+  var right  : bst[T] = null
+  var left   : bst[T] = null
+  var parent : bst[T] = null
+
+  def isLeaf = if (null == left && null == right) true else false
 
 
-  def insert(node : BST[T]) : Unit = {
+  def insert(node : bst[T]) : Unit = {
     if (true == lessThan(node.value, value)) {
 
       if (null == left) {
@@ -26,11 +28,11 @@ class BST[T](var value : T, val lessThan : (T, T) => Boolean, val equals : (T, T
   }
 
   def insert(t : T) : Unit = {
-    var node = new BST(t, lessThan, equals)
+    var node = new bst(t, lessThan, equals)
     this.insert(node)
   }
 
-  def root : BST[T] = if (null == parent) this else parent.root
+  def root : bst[T] = if (null == parent) this else parent.root
 
   def height : Int = {
     if (null == left && null == right) 1      // height of this
@@ -44,8 +46,8 @@ class BST[T](var value : T, val lessThan : (T, T) => Boolean, val equals : (T, T
     }
   }
 
-  def find(v : T) : BST[T] = {
-    var r : BST[T] = this
+  def find(v : T) : bst[T] = {
+    var r : bst[T] = this
     if (v.equals(r.value))
       return r
     else if (lessThan(v, r.value)) {
@@ -63,7 +65,7 @@ class BST[T](var value : T, val lessThan : (T, T) => Boolean, val equals : (T, T
   }
 
   // find the adjacent node and set to new node
-  protected def setNode(adj : BST[T], node : BST[T]) = {
+  protected def setNode(adj : bst[T], node : bst[T]) = {
     if (null == adj) {
       // just return for null association
     }
@@ -90,7 +92,7 @@ class BST[T](var value : T, val lessThan : (T, T) => Boolean, val equals : (T, T
   }
 
   // returns the root or null for empty tree
-  def delete(v : T) : BST[T] = {
+  def delete(v : T) : bst[T] = {
     if (value.equals(v)) { // delete this
       if (left != null && right != null) { // two children
         // get successor
@@ -122,7 +124,7 @@ class BST[T](var value : T, val lessThan : (T, T) => Boolean, val equals : (T, T
     }
   }
  
-  def inorder(f : BST[T] => Unit) : Unit = {
+  def inorder(f : bst[T] => Unit) : Unit = {
     if (null != left)
       left.inorder(f)
     f(this)
@@ -130,7 +132,7 @@ class BST[T](var value : T, val lessThan : (T, T) => Boolean, val equals : (T, T
       right.inorder(f)
   }
 
-  def preorder(f : BST[T] => Unit) : Unit = {
+  def preorder(f : bst[T] => Unit) : Unit = {
     f(this)
     if (null != left)
       left.preorder(f)
@@ -138,7 +140,7 @@ class BST[T](var value : T, val lessThan : (T, T) => Boolean, val equals : (T, T
       right.preorder(f)
   }
 
-  def postorder(f : BST[T] => Unit) : Unit = {
+  def postorder(f : bst[T] => Unit) : Unit = {
     if (null != left)
       left.postorder(f)
     if (null != right)
@@ -146,10 +148,20 @@ class BST[T](var value : T, val lessThan : (T, T) => Boolean, val equals : (T, T
     f(this)
   }
 
-  def successor() : BST[T] = {
+  protected def successor() : bst[T] = {
     if (left == null)
       return this
     else
       return left.successor()
   }
+
+  protected def getSibling() = {
+    if (null == parent)
+      null
+    else if (this == parent.left)
+      parent.right
+    else
+      parent.left
+  }
+
 }

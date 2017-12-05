@@ -1,25 +1,25 @@
 import scala.collection.mutable.ListBuffer
 
-object RBT_test {
+object rbt_test {
 
   // extend the rbtree to get the node color during traversals
-  class RBTColor[T](t : T, lessThan : (T, T) => Boolean, equals : (T, T) => Boolean)
-    extends RBT(t, lessThan, equals) {
+  class rbtColor[T](t : T, lessThan : (T, T) => Boolean, equals : (T, T) => Boolean)
+    extends rbt(t, lessThan, equals) {
 
     // override the traversal operators to print the color
-    override def inorder(f : BST[T] => Unit) : Unit = {
+    override def inorder(f : bst[T] => Unit) : Unit = {
       if (null != left) left.inorder(f)
       f(this)
       print(color.toString + " ")
       if (null != right) right.inorder(f)
     }
-    override def preorder(f : BST[T] => Unit) : Unit = {
+    override def preorder(f : bst[T] => Unit) : Unit = {
       f(this)
       print(color.toString + " ")
       if (null != left) left.preorder(f)
       if (null != right) right.preorder(f)
     }
-    override def postorder(f : BST[T] => Unit) : Unit = {
+    override def postorder(f : bst[T] => Unit) : Unit = {
       if (null != left) left.postorder(f)
       if (null != right) right.postorder(f)
       f(this)
@@ -33,7 +33,7 @@ object RBT_test {
     var rand = scala.util.Random
 
     // cast
-    def asRb[T](x: BST[T]): RBT[T] = x.asInstanceOf[RBT[T]]
+    def asRb[T](x: bst[T]): rbt[T] = x.asInstanceOf[rbt[T]]
 
     // compare functions
     val lessThan = (x : Int, y : Int) => x < y
@@ -41,12 +41,12 @@ object RBT_test {
 
     var numNodes = 0
     // print function
-    def printInt(x : BST[Int]) = {
+    def printInt(x : bst[Int]) = {
       print(x.value + " ")
       numNodes += 1
     }
 
-    var printAll = (r : BST[Int]) => {
+    var printAll = (r : bst[Int]) => {
       if (null == r) {
         println("Empty tree.")
         return
@@ -66,7 +66,7 @@ object RBT_test {
       println("numNodes " + numNodes)
     }
 
-    def blackHeight(x : RBT[Int]) : Int = {
+    def blackHeight(x : rbt[Int]) : Int = {
       val invalid : Int = 0xffffffff
       if (null == x)
         1
@@ -83,7 +83,7 @@ object RBT_test {
       }
     }
 
-    def bH(x : BST[Int]) : Int = {
+    def bH(x : bst[Int]) : Int = {
       if (null == x) {
         1 // black null leaf
       } else {
@@ -91,7 +91,7 @@ object RBT_test {
       }
     }
 
-    def isValidRBT(x : RBT[Int]) : Boolean = {
+    def isValidRBT(x : rbt[Int]) : Boolean = {
 
       // check parent association
       var a = (null == x.parent)
@@ -137,14 +137,14 @@ object RBT_test {
 
     if (2 != args.length) {
 
-      var rbt = new RBTColor(7, lessThan, equals)
+      var rbt = new rbtColor(7, lessThan, equals)
 
       // insert
       var l = ListBuffer(1, 7, 8, 8)
       for (i <- 0 until l.length) {
         println("Inserting " + l(i))
-        var t = new RBTColor[Int](l(i), lessThan, equals)
-        rbt = rbt.insert(t).asInstanceOf[RBTColor[Int]]
+        var t = new rbtColor[Int](l(i), lessThan, equals)
+        rbt = rbt.insert(t).asInstanceOf[rbtColor[Int]]
         if (!isValidRBT(rbt)) {
           throw new Exception("Invalid RBT")
         }
@@ -157,7 +157,7 @@ object RBT_test {
         println("Deleting " + k(i))
         var t = rbt.delete(k(i))
         if (null != t)
-          rbt = t.asInstanceOf[RBTColor[Int]]
+          rbt = t.asInstanceOf[rbtColor[Int]]
         else
           rbt = null
         printAll(rbt)
@@ -173,7 +173,7 @@ object RBT_test {
 
       var r = rand.nextInt(randRange)
       println("adding node: " + r)
-      var rbt = new RBTColor(r, lessThan, equals)
+      var rbt = new rbtColor(r, lessThan, equals)
       var z = 1
 
       // insert a bunch of random nodes
@@ -181,8 +181,8 @@ object RBT_test {
       for (i <- 1 until numRand) {
         r = rand.nextInt(randRange)
         print("adding node: " + r + " ")
-        var t = new RBTColor[Int](r, lessThan, equals)
-        rbt = rbt.insert(t).asInstanceOf[RBTColor[Int]]
+        var t = new rbtColor[Int](r, lessThan, equals)
+        rbt = rbt.insert(t).asInstanceOf[rbtColor[Int]]
         l += r
         printAll(rbt)
         if (!isValidRBT(rbt))
@@ -224,7 +224,7 @@ object RBT_test {
           println("Deleting " + r)
           var t = rbt.delete(r)
           if (t != null) {
-            rbt = t.asInstanceOf[RBTColor[Int]]
+            rbt = t.asInstanceOf[rbtColor[Int]]
             printAll(rbt)
             if (!isValidRBT(rbt))
               throw new Exception("Invalid RBT ")

@@ -1,8 +1,8 @@
 
-RBT_test : RBT_test.scala RBT.scala BST.scala
+rbt_test : rbt_test.scala rbt.scala bst.scala
 	scalac $^
 
-BST_test : BST_test.scala BST.scala
+bst_test : bst_test.scala bst.scala
 	scalac $^
 
 

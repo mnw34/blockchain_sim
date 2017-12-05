@@ -2,50 +2,38 @@
 // red black tree
 
 // define red black tree colors
-class Color
-object BLACK extends Color { override def toString = "b" }
-object RED extends Color { override def toString = "r" }
-object DBLACK extends Color { override def toString = "db" }
+class Color(var str : String) { override def toString = str }
+object BLACK extends Color("b")
+object RED extends Color("r")
+object DBLACK extends Color("db")
 
-class RBT[T](t : T, lessThan : (T, T) => Boolean, equals : (T, T) => Boolean)
-  extends BST(t, lessThan, equals) {
+class rbt[T](t : T, lessThan : (T, T) => Boolean, equals : (T, T) => Boolean)
+  extends bst(t, lessThan, equals) {
 
   var color  : Color = BLACK
 
-  private def asRb(n : BST[T]) : RBT[T] = {
-    if (null == n)
-      null
-    else
-      n.asInstanceOf[RBT[T]]
-  }
-
-  private def getColor(n : BST[T]) = {
+  private def getColor(n : bst[T]) = {
     if (null == n) BLACK
-    else asRb(n).color
+    else n.color
   }
 
-  private def setColor(n : BST[T], c : Color) = {
+  private def setColor(n : bst[T], c : Color) = {
     if (null == n) { // if leaf
       // always black
     }
     else {
       if (DBLACK == c && RED == getColor(n))
-        asRb(n).color = BLACK // double black + red = black
+        n.color = BLACK // double black + red = black
       else
-        asRb(n).color = c
+        n.color = c
     }
   }
 
-  implicit class bstreeColor(n : BST[T]) {
-    def recolor = asRb(n).recolor
-    def rotRight = asRb(n).rotRight
-    def rotLeft = asRb(n).rotLeft
-    def balance = asRb(n).balance
-  }
+  implicit def bstTorbt(n : bst[T]) : rbt[T] = n.asInstanceOf[rbt[T]]
 
-  override def root: RBT[T] = asRb(super.root)
+  override def root: rbt[T] = super.root.asInstanceOf[rbt[T]] //(super.root)
 
-  def insert(node : RBT[T]) = {
+  def insert(node : rbt[T]) = {
     // first step is color inserted node red
     node.color = RED
 
@@ -59,7 +47,12 @@ class RBT[T](t : T, lessThan : (T, T) => Boolean, equals : (T, T) => Boolean)
     root
   }
 
-  override def find(v : T) : RBT[T] = asRb(super.find(v))
+  override def find(v : T) : rbt[T] = {
+    //asRb(super.find(v))
+    var x = super.find(v)
+    if (null != x) x.asInstanceOf[rbt[T]]
+    else null
+  }
 
   protected def reduce : Unit = {
     if (null == parent) color = BLACK
@@ -88,7 +81,7 @@ class RBT[T](t : T, lessThan : (T, T) => Boolean, equals : (T, T) => Boolean)
         setColor(sibling, RED)
         color = BLACK
         setColor(parent, DBLACK)
-        asRb(parent).reduce
+        parent.reduce
       }
       else { // black sibling and at least one red nephew
         if (sibling == parent.right) {
@@ -123,7 +116,7 @@ class RBT[T](t : T, lessThan : (T, T) => Boolean, equals : (T, T) => Boolean)
     }
   }
 
-  override def delete(v : T) : RBT[T] = {
+  override def delete(v : T) : rbt[T] = {
     if (value.equals(v) && (null == left || null == right)) {
 
       var n = if (null != left) left else right
@@ -131,7 +124,7 @@ class RBT[T](t : T, lessThan : (T, T) => Boolean, equals : (T, T) => Boolean)
       if (null == parent) {
         setColor(n, BLACK)
         if (null != n) n.parent = null
-        return asRb(n)
+        return n
       }
       else if (RED == color || RED == getColor(n)) {
         setColor(n, BLACK)
@@ -145,7 +138,7 @@ class RBT[T](t : T, lessThan : (T, T) => Boolean, equals : (T, T) => Boolean)
       else {
         setNode(parent, n)
         setColor(n, DBLACK)
-        asRb(n).reduce
+        n.reduce
       }
     }
     // normal BST
@@ -153,24 +146,24 @@ class RBT[T](t : T, lessThan : (T, T) => Boolean, equals : (T, T) => Boolean)
       // get successor
       var m = right.successor()
       value = m.value
-      asRb(m).delete(value)
+      m.delete(value)
     }
     else if (lessThan(value, v)) {
       if (null != right)
-        asRb(right).delete(v)
+        right.delete(v)
     }
     else {
       if (null != left)
-        asRb(left).delete(v)
+        left.delete(v)
     }
     root // return root
   }
 
-  private def recolor : Unit = {
+  protected def recolor : Unit = {
     if (null == parent) color = BLACK
     else {
       // sibling
-      var s : RBT[T] = if (this == parent.left) asRb(parent.right) else asRb(parent.left)
+      var s : rbt[T] = if (this == parent.left) parent.right else parent.left
       if (BLACK == s.color) { // black sibling
         // black sibling children
         if ((null == s.left || BLACK == getColor(s.left)) && (null == s.right || BLACK == getColor(s.right))) {
@@ -224,7 +217,7 @@ class RBT[T](t : T, lessThan : (T, T) => Boolean, equals : (T, T) => Boolean)
   }
 
   // look up red black insert
-  private def balance() : Unit = {
+  protected def balance() : Unit = {
 
     if (null == parent) { // root
       color = BLACK
@@ -280,27 +273,18 @@ class RBT[T](t : T, lessThan : (T, T) => Boolean, equals : (T, T) => Boolean)
     if (null == parent || null == parent.parent)
       null
     else if (parent.parent.left == parent)
-      asRb(parent.parent.right)
+      parent.parent.right
     else
-      asRb(parent.parent.left)
+      parent.parent.left
   }
 
-  private def getSibling() = {
-    if (null == parent)
-      null
-    else if (this == parent.left)
-      asRb(parent.right)
-    else
-      asRb(parent.left)
-  }
-
-  private def swapColor(x : BST[T], y : BST[T]) = {
-    var t = asRb(x).color
+  private def swapColor(x : bst[T], y : bst[T]) = {
+    var t = x.color
     setColor(x, getColor(y))
     setColor(y, t)
   }
 
-  private def rotRight() : Unit = {
+  protected def rotRight() : Unit = {
     // right rotate g
     //      g         p
     //    p   u  -> x   g
@@ -318,7 +302,7 @@ class RBT[T](t : T, lessThan : (T, T) => Boolean, equals : (T, T) => Boolean)
     if (null != left) left.parent = this
   }
 
-  private def rotLeft() = {
+  protected def rotLeft() = {
     // left rotate p
     //      g         p
     //    p   u  <- x   g

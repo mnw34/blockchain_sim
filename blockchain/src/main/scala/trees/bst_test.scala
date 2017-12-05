@@ -1,6 +1,4 @@
-import trees.BST
-
-object BST_test {
+object bst_test {
 
   def main(args : Array[String]) {
     val numRand    = args(0).toInt
@@ -12,11 +10,11 @@ object BST_test {
     val equals = (x : Int, y : Int) => x == y
 
     // print function
-    val printInt = (x : BST[Int]) => {
+    val printInt = (x : bst[Int]) => {
       print(x.value + " ")
     }
 
-    def isValidBST(x : BST[Int]) : Boolean = {
+    def isValidBST(x : bst[Int]) : Boolean = {
 
       // check parent association
       var isParentValid = (null == x.parent) ||
@@ -38,9 +36,9 @@ object BST_test {
     // create root node
     var r = rand.nextInt(randRange)
     print("adding nodes: " + r)
-    var root = new BST(r, lessThan, equals)
+    var root = new bst(r, lessThan, equals)
 
-    var printAll = (r : BST[Int]) => {
+    var printAll = (r : bst[Int]) => {
       println("\nheight " + r.height)
       print("inorder ")
       r.inorder(printInt)
@@ -55,7 +53,7 @@ object BST_test {
     for (i <- 0 to numRand) {
       r = rand.nextInt(randRange)
       print(" " + r)
-      var t = new BST[Int](r, lessThan, equals)
+      var t = new bst[Int](r, lessThan, equals)
       root.insert(t)
       printAll(root)
       if (!isValidBST(root)) throw new Exception("Invalid BST ")

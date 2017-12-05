@@ -3,7 +3,10 @@
  * the blockchain, a nonce previous hash, and a hash calculator
  * instance.
  */
-class blockchain(nonce : Int, d : Array[Byte], hash : hash) {
+
+import crypto.hashable
+
+class blockchain(nonce : Int, d : Array[Byte], hash : hashable) {
   var prev : blockchain = null
   var next : blockchain = null
   val data : Array[Byte] = d
