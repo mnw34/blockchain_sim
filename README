@@ -1,0 +1,11 @@
+README
+
+ To run the blockchain simulator go to the scala directory and run 
+ 
+ $> make test. 
+ 
+ Requires requires scalac on path.
+ 
+ See the demo video at https://www.youtube.com/watch?v=U4qetJB2R4s&feature=youtu.be
+ 
+ Please look at the software design pdf under the top level directory of the repo as well.
