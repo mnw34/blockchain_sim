@@ -8,7 +8,7 @@ object account_test {
     var l = new Array[account](args(0).toInt)
     for (i <- 0 until l.length) {
       l(i) = new account(pw.toString)
-      l(i).balance += 10
+      l(i).balance = 10
       println("new account - " + l(i))
       var pwH = PasswordHasher.hash(pw.getBytes)
       var xp = AccountKeyPairGenerator.getPublic(pwH)
@@ -26,11 +26,13 @@ object account_test {
 
       if (a != b && 0 != v) {
 
-        println("transfer " + v + "\nfrom " + a + "\nto " + b)
+        println("transfer [$" + v + "] from " + a + " to " + b)
         var st = a.transfer(v, b)
-        println("complete " + v + "\nfrom " + a + "\nto " + b)
+        println("complete [$" + v + "] from " + a + " to " + b)
         println("signed transfer " + st)
       }
     }
+
+    println("PASSED")
   }
 }

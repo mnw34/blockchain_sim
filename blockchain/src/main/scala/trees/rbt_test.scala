@@ -242,5 +242,6 @@ object rbt_test {
         }
       }
     }
+    println("PASSED")
   }
 }

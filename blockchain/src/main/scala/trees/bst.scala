@@ -1,6 +1,8 @@
 // bstree.scala
 // binary search tree
 
+import scala.collection.mutable.ArrayBuffer
+
 // takes a datatype and compare function
 class bst[T](var value : T, val lessThan : (T, T) => Boolean, val equals : (T, T) => Boolean) {
   var right  : bst[T] = null
@@ -122,6 +124,29 @@ class bst[T](var value : T, val lessThan : (T, T) => Boolean, val equals : (T, T
       if (null != left) this.left = left.delete(v)
       this
     }
+  }
+
+  def asList = {
+    var l = new ArrayBuffer[T](5)
+    var i = 0
+    var f = (t : bst[T]) => {
+      if (null == t) {
+        // return
+      }
+      else if (i < l.length) {
+        l(i) = t.value
+        i += 1
+      }
+      else {
+        var u = new ArrayBuffer[T](l.length * 2)
+        u.prependAll(l)
+        l = u
+        l.prepend(t.value)
+        i += 1
+      }
+    }
+    inorder(f)
+    if (null != l) l.toList else null // return array of accounts
   }
  
   def inorder(f : bst[T] => Unit) : Unit = {

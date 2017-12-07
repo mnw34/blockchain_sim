@@ -87,5 +87,7 @@ object merkelTree_test {
     }
 
     printAll(root)
+
+    println("PASSED")
   }
 }

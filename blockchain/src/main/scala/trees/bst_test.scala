@@ -90,5 +90,6 @@ object bst_test {
         }
       }
     }
+    println("PASSED")
   }
 }
